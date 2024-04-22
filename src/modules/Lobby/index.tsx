@@ -41,7 +41,7 @@ const LobbyPage = () => {
         score: number
       }[] = JSON.parse(event.data)
       setScoreboard(data)
-      const ownYearScore = data.find((score) => score.year.includes(String(user.year)))
+      const ownYearScore = data.find((score) => score.year.includes(String(user.username).slice(0, 2)))
       if (ownYearScore) {
         setLatestScoreAddCount(ownYearScore.score)
       }
@@ -79,7 +79,7 @@ const LobbyPage = () => {
           },
         },
       )
-    }, 10000)
+    }, 5000)
 
     return () => clearInterval(interval)
   }, [user, user.username, count, latestScore])
@@ -181,9 +181,16 @@ const LobbyPage = () => {
         <Typography variant="h3" className="w-full text-center text-white">
           Scoreboard
         </Typography>
-        {scoreboard.map((score, index) => (
-          <ScoreboardCount key={index} score={score} addingScoreToOwnYear={count - latestScoreAddCount} />
-        ))}
+        {scoreboard
+          .sort((a, b) => b.score - a.score)
+          .map((score, index) => (
+            <ScoreboardCount
+              key={score.year}
+              score={score}
+              index={index}
+              addingScoreToOwnYear={count - latestScoreAddCount}
+            />
+          ))}
         {/* {scoreboard.map((score, index) => {
           return (
             <div key={index} className="flex flex-row justify-between">

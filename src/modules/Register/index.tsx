@@ -58,7 +58,11 @@ const RegisterPage = () => {
         </div>
       </div>
 
-      <Button className="w-full" onClick={handleCreate} disabled={!studentId || !avatar || studentId[0] != '6'}>
+      <Button
+        className="w-full"
+        onClick={handleCreate}
+        disabled={!studentId || !avatar || studentId[0] != '6' || studentId.length != 10}
+      >
         Create
       </Button>
     </div>

@@ -10,6 +10,8 @@ import userStore from '@/common/stores/user/user-store'
 import Navbar from './components/Navbar'
 import ScoreboardCount from './components/ScoreboardCount'
 
+const POP_CAT_SOUND = '/popcat/pop-cat.mp3'
+
 const LobbyPage = () => {
   const [latestScoreAddCount, setLatestScoreAddCount] = useState(0)
   const [latestScore, setLatestScore] = useState(0)
@@ -23,8 +25,6 @@ const LobbyPage = () => {
       score: number
     }[]
   >([])
-
-  const audio = new Audio('/popcat/pop-cat.mp3')
 
   const user = userStore((state) => state.user)
 
@@ -113,7 +113,7 @@ const LobbyPage = () => {
         setSpacePressed(true)
         setOn(true)
         setCount((prev) => prev + 1)
-        audio.play()
+        new Audio(POP_CAT_SOUND).play()
       }
     }
 
@@ -128,7 +128,7 @@ const LobbyPage = () => {
     const handleTouchDown = () => {
       setOn(true)
       setCount((prev) => prev + 1)
-      audio.play()
+      new Audio(POP_CAT_SOUND).play()
     }
 
     const handleTouchUp = () => {
@@ -237,7 +237,7 @@ const LobbyPage = () => {
         onMouseDown={() => {
           setOn(true)
           setCount((prev) => prev + 1)
-          audio.play()
+          new Audio(POP_CAT_SOUND).play()
         }}
         onMouseUp={() => setOn(false)}
         onMouseLeave={() => setOn(false)}

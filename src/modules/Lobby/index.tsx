@@ -24,6 +24,8 @@ const LobbyPage = () => {
     }[]
   >([])
 
+  const audio = new Audio('/popcat/pop-cat.mp3')
+
   const user = userStore((state) => state.user)
 
   // dashboardSocket
@@ -111,6 +113,7 @@ const LobbyPage = () => {
         setSpacePressed(true)
         setOn(true)
         setCount((prev) => prev + 1)
+        audio.play()
       }
     }
 
@@ -125,6 +128,7 @@ const LobbyPage = () => {
     const handleTouchDown = () => {
       setOn(true)
       setCount((prev) => prev + 1)
+      audio.play()
     }
 
     const handleTouchUp = () => {
@@ -226,6 +230,7 @@ const LobbyPage = () => {
         onMouseDown={() => {
           setOn(true)
           setCount((prev) => prev + 1)
+          audio.play()
         }}
         onMouseUp={() => setOn(false)}
         onMouseLeave={() => setOn(false)}

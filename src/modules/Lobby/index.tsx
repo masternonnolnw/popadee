@@ -1,5 +1,6 @@
+import { motion } from 'framer-motion'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import Typography from '@/common/components/base/Typography'
 
@@ -37,8 +38,41 @@ const LobbyPage = () => {
     }
   }, [spacePressed])
 
+  const constraintsRef = useRef(null)
+
   return (
-    <div className="flex flex-col min-h-screen relative w-full">
+    <motion.div ref={constraintsRef} className="flex flex-col min-h-screen relative w-full overflow-hidden">
+      {/* score board */}
+      <motion.div
+        drag
+        dragConstraints={constraintsRef}
+        whileDrag={{
+          scale: 1.1,
+          zIndex: 3,
+        }}
+        className="flex flex-col gap-2 w-[400px] absolute right-5 rounded-md p-4 top-10 z-40 bg-black bg-opacity-50"
+      >
+        <Typography variant="h3" className="w-full text-center text-white">
+          Scoreboard
+        </Typography>
+        <div className="flex flex-row justify-between">
+          <Typography variant="h4" className="text-white">
+            Year 3
+          </Typography>
+          <Typography variant="h4" className="text-white">
+            {(1012 + count).toLocaleString()}
+          </Typography>
+        </div>
+        <div className="flex flex-row justify-between">
+          <Typography variant="h4" className="text-white">
+            Year 4
+          </Typography>
+          <Typography variant="h4" className="text-white">
+            {(102 + count).toLocaleString()}
+          </Typography>
+        </div>
+      </motion.div>
+
       <div className="flex absolute top-0 left-0 right-0 h-full items-center justify-center">
         <Image src="/popcat/background.png" fill alt="background" className="object-cover pointer-events-none" />
       </div>
@@ -66,7 +100,7 @@ const LobbyPage = () => {
       />
 
       <Navbar />
-    </div>
+    </motion.div>
   )
 }
 

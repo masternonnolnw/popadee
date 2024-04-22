@@ -1,15 +1,101 @@
+import axios from 'axios'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 
 import Typography from '@/common/components/base/Typography'
+import { BASE_URL, SOCKET_URL } from '@/common/env'
+import userStore from '@/common/stores/user/user-store'
 
 import Navbar from './components/Navbar'
+import ScoreboardCount from './components/ScoreboardCount'
 
 const LobbyPage = () => {
+  const [latestScoreAddCount, setLatestScoreAddCount] = useState(0)
+  const [latestScore, setLatestScore] = useState(0)
   const [count, setCount] = useState(0)
   const [on, setOn] = useState(false)
   const [spacePressed, setSpacePressed] = useState(false)
+
+  const [mobilePressed, setMobilePressed] = useState(false)
+
+  const [scoreboard, setScoreboard] = useState<
+    {
+      year: string
+      score: number
+    }[]
+  >([])
+
+  // dashboardSocket
+  useEffect(() => {
+    const dashboardSocket = new WebSocket(SOCKET_URL)
+    dashboardSocket.onopen = () => {
+      console.log('dashboard socket connected')
+    }
+
+    dashboardSocket.onmessage = (event) => {
+      console.log('dashboard socket message', event)
+      const data = JSON.parse(event.data)
+      setScoreboard(data)
+    }
+
+    return () => {
+      dashboardSocket.close()
+    }
+  }, [])
+
+  const [init, setInit] = useState(false)
+
+  const user = userStore((state) => state.user)
+
+  // create function that run every 5 seconds to update score
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (!user || !user.username) return
+
+      const diffScore = count - latestScore
+      console.log(diffScore, count, latestScore)
+
+      setLatestScore(count)
+
+      if (diffScore === 0) return
+      await axios.post(
+        `${BASE_URL}/update-click`,
+        {
+          score: diffScore,
+        },
+        {
+          headers: {
+            student_id: user.username,
+          },
+        },
+      )
+    }, 10000)
+
+    return () => clearInterval(interval)
+  }, [user, user.username, count, latestScore])
+
+  useEffect(() => {
+    const fetchScore = async () => {
+      if (!user || !user.username) return
+
+      if (init) return
+      const response = await axios.post(`${BASE_URL}/login`, {
+        student_id: user.username,
+        email: user.email,
+      })
+      setCount(response.data.score)
+      setLatestScore(response.data.score)
+      setLatestScoreAddCount(response.data.score)
+
+      const scoreboardResponse = await axios.get(`${BASE_URL}/scoreboard`)
+      setScoreboard(scoreboardResponse.data)
+
+      setInit(true)
+    }
+
+    fetchScore()
+  }, [user, user.username])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -29,16 +115,47 @@ const LobbyPage = () => {
       }
     }
 
+    const handleTouchDown = () => {
+      setMobilePressed(true)
+      setOn(true)
+      setCount((prev) => prev + 1)
+    }
+
+    const handleTouchUp = () => {
+      setMobilePressed(false)
+      setOn(false)
+    }
+
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
+
+    // on mobile click
+    window.addEventListener('touchstart', handleTouchDown)
+    window.addEventListener('touchend', handleTouchUp)
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
       window.removeEventListener('keyup', handleKeyUp)
+      window.removeEventListener('touchstart', handleTouchDown)
+      window.removeEventListener('touchend', handleTouchUp)
     }
   }, [spacePressed])
 
   const constraintsRef = useRef(null)
+
+  // set interval to add score to adashboard by 5 for all years every 5 seconds
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setScoreboard((prev) =>
+  //       prev.map((score) => ({
+  //         ...score,
+  //         score: score.score + 5,
+  //       })),
+  //     )
+  //   }, 5000)
+
+  //   return () => clearInterval(interval)
+  // }, [])
 
   return (
     <motion.div ref={constraintsRef} className="flex flex-col min-h-screen relative w-full overflow-hidden">
@@ -55,30 +172,38 @@ const LobbyPage = () => {
         <Typography variant="h3" className="w-full text-center text-white">
           Scoreboard
         </Typography>
-        <div className="flex flex-row justify-between">
-          <Typography variant="h4" className="text-white">
-            Year 3
-          </Typography>
-          <Typography variant="h4" className="text-white">
-            {(1012 + count).toLocaleString()}
-          </Typography>
-        </div>
-        <div className="flex flex-row justify-between">
-          <Typography variant="h4" className="text-white">
-            Year 4
-          </Typography>
-          <Typography variant="h4" className="text-white">
-            {(102 + count).toLocaleString()}
-          </Typography>
-        </div>
+        {scoreboard.map((score, index) => (
+          <ScoreboardCount key={index} score={score} addingScoreToOwnYear={count - latestScoreAddCount} />
+        ))}
+        {/* {scoreboard.map((score, index) => {
+          return (
+            <div key={index} className="flex flex-row justify-between">
+              <Typography variant="h4" className="text-white">
+                {score.year}
+              </Typography>
+              <Typography variant="h4" className="text-white">
+                {(
+                  score.score + Number(score.year.includes(String(user.year)) ? count - latestScoreAddCount : 0)
+                ).toLocaleString()}
+              </Typography>
+            </div>
+          )
+        })} */}
       </motion.div>
 
       <div className="flex absolute top-0 left-0 right-0 h-full items-center justify-center">
-        <Image src="/popcat/background.png" fill alt="background" className="object-cover pointer-events-none" />
+        <Image
+          src="/popcat/background.png"
+          fill
+          alt="background"
+          className="object-cover pointer-events-none"
+          {...{ inert: '' }}
+        />
       </div>
       <Typography
         className="absolute text-white !text-[90px] left-1/2 top-24 transform -translate-x-1/2 z-[20]"
         variant="h1"
+        {...{ inert: '' }}
       >
         {count.toLocaleString()}
       </Typography>
@@ -88,6 +213,7 @@ const LobbyPage = () => {
         height={300}
         alt="background"
         className="object-contain absolute bottom-0 left-1/2 transform -translate-x-1/2 pointer-events-none"
+        {...{ inert: '' }}
       />
       <div
         className="flex w-full h-full absolute top-0 left-0 z-[10]"

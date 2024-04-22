@@ -11,14 +11,18 @@ const Navbar = () => {
   const user = userStore((state) => state.user)
 
   return (
-    <div className="flex flex-row w-full h-[100px] items-center px-6 sticky top-0 z-[100]">
+    <div className="flex flex-row w-full h-[100px] items-center px-6 sticky top-0 z-[100]" {...{ inert: '' }}>
       <Avatar avatarUrl={user.userAvatar} />
 
       <div className="flex flex-row gap-2 w-full">
-        <Typography variant="h4" className="ml-4 text-white">
+        <Typography variant="h4" className="ml-4 text-white" {...{ inert: '' }}>
           {user.username}
         </Typography>
-        <Typography variant="h1" className="text-white !text-[60px] absolute left-1/2 top-5 transform -translate-x-1/2">
+        <Typography
+          variant="h1"
+          className="text-white !text-[60px] absolute left-1/2 top-5 transform -translate-x-1/2"
+          {...{ inert: '' }}
+        >
           Popadee
         </Typography>
       </div>

@@ -17,8 +17,6 @@ const LobbyPage = () => {
   const [on, setOn] = useState(false)
   const [spacePressed, setSpacePressed] = useState(false)
 
-  const [mobilePressed, setMobilePressed] = useState(false)
-
   const [scoreboard, setScoreboard] = useState<
     {
       year: string
@@ -26,27 +24,36 @@ const LobbyPage = () => {
     }[]
   >([])
 
+  const user = userStore((state) => state.user)
+
   // dashboardSocket
   useEffect(() => {
     const dashboardSocket = new WebSocket(SOCKET_URL)
     dashboardSocket.onopen = () => {
       console.log('dashboard socket connected')
     }
-
     dashboardSocket.onmessage = (event) => {
       console.log('dashboard socket message', event)
-      const data = JSON.parse(event.data)
+      const data: {
+        year: string
+        score: number
+      }[] = JSON.parse(event.data)
       setScoreboard(data)
+      const ownYearScore = data.find((score) => score.year.includes(String(user.year)))
+      if (ownYearScore) {
+        setLatestScoreAddCount(ownYearScore.score)
+      }
+      console.log(data)
+      console.log(user.year)
+      console.log(ownYearScore)
     }
 
     return () => {
       dashboardSocket.close()
     }
-  }, [])
+  }, [user, user.year])
 
   const [init, setInit] = useState(false)
-
-  const user = userStore((state) => state.user)
 
   // create function that run every 5 seconds to update score
   useEffect(() => {
@@ -116,13 +123,11 @@ const LobbyPage = () => {
     }
 
     const handleTouchDown = () => {
-      setMobilePressed(true)
       setOn(true)
       setCount((prev) => prev + 1)
     }
 
     const handleTouchUp = () => {
-      setMobilePressed(false)
       setOn(false)
     }
 
@@ -208,11 +213,12 @@ const LobbyPage = () => {
         {count.toLocaleString()}
       </Typography>
       <Image
-        src={on ? '/popcat/on-cat.png' : '/popcat/off-cat.png'}
-        width={500}
+        // src={on ? '/popcat/on-cat.png' : '/popcat/off-cat.png'}
+        src={on ? '/popcat/cat-on-2.png' : '/popcat/cat-off.png'}
+        width={1460}
         height={300}
         alt="background"
-        className="object-contain absolute bottom-0 left-1/2 transform -translate-x-1/2 pointer-events-none"
+        className="object-contain absolute bottom-[-850px] left-1/2 transform -translate-x-1/2 pointer-events-none"
         {...{ inert: '' }}
       />
       <div

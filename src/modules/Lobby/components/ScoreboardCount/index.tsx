@@ -11,8 +11,7 @@ interface ScoreboardCountProps {
 const ScoreboardCount = ({ score, addingScoreToOwnYear = 0 }: ScoreboardCountProps) => {
   const user = userStore((state) => state.user)
 
-  const realScore = score.score
-  // + Number(score.year.includes(String(user.year)) ? addingScoreToOwnYear : 0)
+  const realScore = score.score + Number(score.year.includes(String(user.year)) ? addingScoreToOwnYear : 0)
 
   return (
     <div className="flex flex-row justify-between">
